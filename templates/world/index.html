@@ -1,4 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <a href="{% url 'world.views.calculos'%}">calculos</a>
+Hi.  There should be a total of {{puntos}} Locations.<br />
+    To see this data in Google Earth, <a href="/kml/">Open as KML</a>.
+    
 {% endblock %}

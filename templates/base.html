@@ -1,23 +1,29 @@
 <html>
 <head>
-	<script src="http://openlayers.org/api/OpenLayers.js"></script>
-    <script type="text/javascript">
-        var map, base_layer, kml;
-        function init(){
-            map = new OpenLayers.Map('map');
-            base_layer = new OpenLayers.Layer.WMS( "OpenLayers WMS",
-               "http://labs.metacarta.com/wms/vmap0", {layers: 'basic'} );
-            kml = new OpenLayers.Layer.GML("KML", "/kml/", 
-               { format: OpenLayers.Format.KML });
-            map.addLayers([base_layer, kml]);
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<script type="text/javascript" src="http://openlayers.org/api/2.11/OpenLayers.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://openlayers.org/api/2.11/theme/default/style.css"></link>
+<script type="text/javascript">
+function init(){
+            var map = new OpenLayers.Map('map',{});
+            var wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",
+               "http://vmap0.tiles.osgeo.org/wms/vmap0", {layers: 'basic'} );
+            var nasa= new OpenLayers.Layer.WMS(" NASA WMS", "http://wms.jpl.nasa.gov/wms/cgi?",{layers:"BMNG",format:"image/png"},{isBaseLayer:true});
+            //kml = new OpenLayers.Layer.GML("KML", "http://127.0.0.1:8000/kml/", 
+              // { format: OpenLayers.Format.KML });
+            //var osm = new OpenLayers.Layer.OSM();
+            map.addLayers(nasa);
             map.zoomToMaxExtent();
-            }
-    </script>
+        }
+    </script>    
 </head>
 <body onload="init()">
 <h1>GIS</h1>
 
 {% block content %}
 {% endblock%}
+<div id="map"></div>
+
 </body>
 </html>

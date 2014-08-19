@@ -9,5 +9,8 @@ def calculos(request):
 	puntos = PuntosInteres.objects.all().count()
 	return render_to_response('world/calculos.html',{'puntos':puntos})
 
+def allkml(request):
+	interes = PuntosInteres.objects.all()
+	return render_to_kml('gis/kml/placemarks.kml',{'places': interes})
 
 # Create your views here.

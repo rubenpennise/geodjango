@@ -11,4 +11,5 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', include('world.urls')),
     url(r'^calculos/$', 'world.views.calculos'),
+    url(r'^kml/', 'world.views.allkml'),
 )
