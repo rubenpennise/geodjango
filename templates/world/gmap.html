@@ -41,4 +41,25 @@
 {{lon}}
 {{lat}}
 
+<div id="map" style="width: 500px; height:400px;"></div>
+<script type="text/javascript">
+map = new OpenLayers.Map('map');
+    layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
+    map.addLayer(layer);
+    map.setCenter(
+        new OpenLayers.LonLat({{lon }}, {{ lat }}).transform(
+            new OpenLayers.Projection("EPSG:4326"),
+            map.getProjectionObject()
+        ), 15);
+
+   var lonLat = new OpenLayers.LonLat({{ lon }}, {{lat }})
+             .transform(
+               new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+               map.getProjectionObject() // to Spherical Mercator Projection
+             );
+   var markers = new OpenLayers.Layer.Markers( "Markers" );
+   map.addLayer(markers);
+   markers.addMarker(new OpenLayers.Marker(lonLat));
+</script>
+
 {% endblock %}
