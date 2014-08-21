@@ -34,6 +34,24 @@ class PuntosInteres(models.Model):
     def __str__(self):
         return self.name
 
+class Lineas(models.Model):
+    name = models.CharField(max_length=50)
+    descripcion = models.TextField()
+    geometry = models.LineStringField()
+    objects = models.GeoManager()
+
+    def __str__(self):
+        return self.name
+
+class Poligonos(models.Model):
+    name = models.CharField(max_length=50)
+    descripcion = models.TextField()
+    geometry = models.PolygonField()
+    objects = models.GeoManager()
+
+    def __str__(self):
+        return self.name
+
 
 
 # Create your models here.

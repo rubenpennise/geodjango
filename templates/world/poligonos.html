@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+<h1>gmaps-lineas</h1>
+{% block content %}
+
+    
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+<script type="text/javascript">
+      	var poligonos={{data|safe}};
+        var mapOptions = {
+          center: new google.maps.LatLng({{lat}}, {{lon}}),
+          zoom: 12,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        var map = new google.maps.Map(document.getElementById("map_canvas"),
+            mapOptions);
+
+         for(key in poligonos.features){
+            var cord = poligonos.features[key].geometry.coordinates
+            for(c in cord){ 
+
+              var array = cord[c[0]];
+              for (i in array){
+                console.log(array[i][0]);
+                console.log(array[i][1]);
+              }
+          }
+      }
+
+      for(key in poligonos.features){
+            var cord = poligonos.features[key].geometry.coordinates
+            for(c in cord){
+              var array = cord[c[0]];
+              var poli= [];
+              for (i in array){
+                poli[i] = new google.maps.LatLng(array[i][1],array[i][0]);  
+
+              }
+              bermudaTriangle = new google.maps.Polygon({
+                paths: poli,
+                strokeColor: "#FF0000",
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: "#FF0000",
+                fillOpacity: 0.35
+              });
+
+            bermudaTriangle.setMap(map);  
+            }
+            
+      }
+
+    </script>
+{{data}}
+{{lon}}
+{{lat}}
+
+{% endblock %}

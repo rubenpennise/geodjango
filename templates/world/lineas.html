@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+<h1>gmaps-lineas</h1>
+{% block content %}
+
+    
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+<script type="text/javascript">
+      	var lineas={{data|safe}};
+        var mapOptions = {
+          center: new google.maps.LatLng({{lat}}, {{lon}}),
+          zoom: 12,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        var map = new google.maps.Map(document.getElementById("map_canvas"),
+            mapOptions);
+
+         for(key in lineas.features){
+            var cord = lineas.features[key].geometry.coordinates
+            for(c in cord){ 
+              console.log(cord[c][0]);
+              console.log(cord[c][1]);
+            }
+      }
+
+      for(key in lineas.features){
+            var cord = lineas.features[key].geometry.coordinates
+            var linea= [];
+            for(c in cord){ 
+              linea[c] = new google.maps.LatLng(cord[c][1],cord[c][0]);
+            }
+            var flightPath = new google.maps.Polyline({
+                path: linea,
+                strokeColor: "#FF0000",
+                strokeOpacity: 1.0,
+                strokeWeight: 2
+            });
+
+            flightPath.setMap(map);
+
+      }
+
+    </script>
+{{data}}
+{{lon}}
+{{lat}}
+
+{% endblock %}

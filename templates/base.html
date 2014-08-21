@@ -4,16 +4,27 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 	<script type="text/javascript" src="http://openlayers.org/api/2.11/OpenLayers.js"></script>
     <link rel="stylesheet" type="text/css" href="http://openlayers.org/api/2.11/theme/default/style.css"></link>
+    <script type="text/javascript"
+      src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDX6Wo7o1pGgdTKaUg8VwiwPSpAimGmcMU&sensor=TRUE">
+    </script>
 <script type="text/javascript">
 function init(){
-            var map = new OpenLayers.Map('map',{});
-            var wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",
-               "http://vmap0.tiles.osgeo.org/wms/vmap0", {layers: 'basic'} );
-            var nasa= new OpenLayers.Layer.WMS(" NASA WMS", "http://wms.jpl.nasa.gov/wms/cgi?",{layers:"BMNG",format:"image/png"},{isBaseLayer:true});
-            //kml = new OpenLayers.Layer.GML("KML", "http://127.0.0.1:8000/kml/", 
-              // { format: OpenLayers.Format.KML });
-            //var osm = new OpenLayers.Layer.OSM();
-            map.addLayers(nasa);
+            var map = new OpenLayers.Map("map",{projection: new OpenLayers.Projection("EPSG:4326"),zoom:8});
+
+            //map.setCenter(lonlat = new OpenLayers.LonLat(-65.7833, -28.4667),zoom=8);
+            //var wms = new OpenLayers.Layer.WMS( "OpenLayers WMS","http://vmap0.tiles.osgeo.org/wms/vmap0?", {layers: 'basic'} );
+            //var nasa= new OpenLayers.Layer.WMS(" NASA WMS", "http://wms.jpl.nasa.gov/wms/cgi?",{layers:"BMNG",format:"image/png"},{isBaseLayer:true});
+            //kml = new OpenLayers.Layer.GML("KML", "127.0.0.1:8000/kml/",{ format: new OpenLayers.Format.KML() });
+            
+            var osm = new OpenLayers.Layer.OSM();
+            var layer = new OpenLayers.Layer.Vector("GML", {
+                strategies: [new OpenLayers.Strategy.Fixed()],
+                protocol: new OpenLayers.Protocol.HTTP({
+                    url: "127.0.0.1:8000/jsongeo/",
+                format: new OpenLayers.Format.GeoJSON()
+                })
+            });
+            map.addLayers([osm,layer]);
             map.zoomToMaxExtent();
         }
     </script>    
@@ -23,7 +34,8 @@ function init(){
 
 {% block content %}
 {% endblock%}
-<div id="map"></div>
+<div id="map" style="width: 500px; height:400px;">
+</div>
 
 </body>
 </html>

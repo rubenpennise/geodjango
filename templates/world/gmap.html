@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+<h1>gmaps-puntos</h1>
+{% block content %}
+
+    
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+<script type="text/javascript">
+      	var puntos={{data|safe}};
+        var mapOptions = {
+          center: new google.maps.LatLng({{lat}}, {{lon}}),
+          zoom: 6,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        var map = new google.maps.Map(document.getElementById("map_canvas"),
+            mapOptions);
+
+    for (key in puntos.features) {  
+      	marker = new google.maps.Marker({
+        position: new google.maps.LatLng(puntos.features[key].geometry.coordinates[1], puntos.features[key].geometry.coordinates[0]),
+        map: map
+    });
+      	(function(marker, key) {
+                        // add click event
+                        google.maps.event.addListener(marker, 'click', function() {
+                            infowindow = new google.maps.InfoWindow({
+                                content: puntos.features[key].properties.name
+                            });
+                            infowindow.open(map, marker);
+                            console.log(puntos.features[key].properties.name);
+                        });
+                    })(marker, key);
+
+  }
+        //alert(puntos.features[1].geometry.coordinates[1]);	
+      for(key in puntos.features){
+      	console.log(puntos.features[key].geometry.coordinates[0]);
+      	console.log(puntos.features[key].geometry.coordinates[1]);
+      }
+    </script>
+{{data}}
+{{lon}}
+{{lat}}
+
+{% endblock %}
