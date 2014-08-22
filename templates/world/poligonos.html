@@ -48,10 +48,82 @@
             }
             
       }
-
+      function imprimirgmap(){
+        var content = window.document.getElementById("map_canvas"); // get you map details
+        var newWindow = window.open(); // open a new window
+        newWindow.document.write(content.innerHTML); // write the map into the new window
+        newWindow.print(); // print the new window
+      }
     </script>
 {{data}}
 {{lon}}
 {{lat}}
+<div id="map" style="width: 500px; height:400px;">
+</div>
+<script type="text/javascript">
+map = new OpenLayers.Map('map');
+    layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
+    map.addLayer(layer);
+    map.setCenter(
+        new OpenLayers.LonLat({{lon }}, {{ lat }}).transform(
+            new OpenLayers.Projection("EPSG:4326"),
+            map.getProjectionObject()
+        ), 11);
+    //primero el vector
+    vectors = new OpenLayers.Layer.Vector("Vector Layer");
+    
+    map.addControl(new OpenLayers.Control.DrawFeature(vectors, OpenLayers.Handler.Polygon));
 
+    exportMapControl = new OpenLayers.Control.ExportMap();
+                map.addControl(exportMapControl);
+                map.addControl(new OpenLayers.Control.LayerSwitcher());
+    //segundo los puntos
+    //tercero el linear Ring
+    //cuarto agrego el feature al vector OpenLayers.Feature.vector()
+    //agregar el layer al mapa
+    var style = { 
+      strokeColor: '#0000ff', 
+      strokeOpacity: 0.5,
+      strokeWidth: 5,
+      fillColor: "#0000ff",
+      fillOpacity: 0.35
+    };
+    var attributes = {name: "circuito numero 1", bar: "foo"};
+    for(key in poligonos.features){
+            var cord = poligonos.features[key].geometry.coordinates
+            for(c in cord){
+              var array = cord[c[0]];
+              var puntos= [];
+              for (i in array){
+                puntos[i] = new OpenLayers.Geometry.Point(array[i][0],array[i][1]).transform(new OpenLayers.Projection("EPSG:4326"),
+                                                                                            map.getProjectionObject());  
+              }
+                var ring = new OpenLayers.Geometry.LinearRing(puntos);
+                var polygon = new OpenLayers.Geometry.Polygon([ring]);
+                var feature = new OpenLayers.Feature.Vector(polygon,null,style);
+                vectors.addFeatures([feature]);
+            }
+      }
+      map.addLayer(vectors);
+      function imprimiropen(){
+        var content = window.document.getElementById("map"); // get you map details
+    var newWindow = window.open(); // open a new window
+    newWindow.document.write(content.innerHTML); // write the map into the new window
+    newWindow.print(); // print the new window
+      }
+  function exportMap() {
+                var canvas = OpenLayers.Util.getElement("exportedImage");
+                //var canvas = new OpenLayers.Renderer.Canvas("exportedImage");
+                exportMapControl.trigger(canvas);   
+                
+//                // set download url (toDataURL() requires the use of a proxy)
+//                OpenLayers.Util.getElement("downloadLink").href = canvas.toDataURL();
+            }
+</script>
+<button onclick="imprimiropen()">imprimir openlayers</button>
+<button onclick="exportMap()">imagen openlayers</button>
+<!-- <a id="downloadLink" href="#" target="_blank">Download Image</a> (-> Save Link as) -->
+<button onclick="imprimirgmap()">imprimir gmap</button>
+<p>Exported map:</p>
+            <canvas id="exportedImage" class="smallmap"></canvas> <br />
 {% endblock %}

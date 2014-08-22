@@ -41,6 +41,9 @@ def jsonser(request):
 	pnt = Point(-65.7833, -28.4667, srid=4326)
 	pnt.transform(4269)
 	lon,lat=pnt.coords
+	pnti = Point(-65.7833, -28.4667, srid=4326)
+	pnti.transform(900913)
+	loni,lati=pnti.coords
 	#data = serializers.serialize('json',puntos)
 	#return HttpResponse(data, mimetype='application/json')
 	return render_to_response('world/gmap.html', locals(), context_instance=RequestContext(request))
@@ -53,6 +56,9 @@ def lineas(request):
 	pnt = Point(-65.7833, -28.4667, srid=4326)
 	pnt.transform(4269)
 	lon,lat=pnt.coords
+	pnti = Point(-65.7833, -28.4667, srid=4326)
+	pnti.transform(900913)
+	loni,lati=pnti.coords
 	#data = serializers.serialize('json',puntos)
 	#return HttpResponse(data, mimetype='application/json')
 	return render_to_response('world/lineas.html', locals(), context_instance=RequestContext(request))
@@ -65,6 +71,9 @@ def poligonos(request):
 	pnt = Point(-65.7833, -28.4667, srid=4326)
 	pnt.transform(4269)
 	lon,lat=pnt.coords
+	pnti = Point(-65.7833, -28.4667, srid=4326)
+	pnti.transform(900913)
+	loni,lati=pnti.coords
 	#data = serializers.serialize('json',puntos)
 	#return HttpResponse(data, mimetype='application/json')
 	return render_to_response('world/poligonos.html', locals(), context_instance=RequestContext(request))

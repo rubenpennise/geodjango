@@ -43,5 +43,48 @@
 {{data}}
 {{lon}}
 {{lat}}
+{{loni}}
+{{lati}}
+<div id="map" style="width: 500px; height:400px;">
+</div>
+<script type="text/javascript">
+map = new OpenLayers.Map('map');
+    layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
+    map.addLayer(layer);
+    map.setCenter(
+        new OpenLayers.LonLat({{lon }}, {{ lat }}).transform(
+            new OpenLayers.Projection("EPSG:4326"),
+            map.getProjectionObject()
+        ), 11);
+    //primero el vector
+    vectors = new OpenLayers.Layer.Vector("Vector Layer");
+    
+    map.addControl(new OpenLayers.Control.DrawFeature(vectors, OpenLayers.Handler.Path));
+    //segundo los puntos
+    //tercero el linear String
+    //cuarto agrego el feature al vector OpenLayers.Feature.vector()
+    //agregar el layer al mapa
+    var style = { 
+      strokeColor: '#0000ff', 
+      strokeOpacity: 0.5,
+      strokeWidth: 5
+    };
+    var lineas={{data|safe}};
+    for(key in lineas.features){
+            var cord = lineas.features[key].geometry.coordinates
+            var puntos= [];
+            for(c in cord){ 
+              puntos[c] = new OpenLayers.Geometry.Point(cord[c][0],cord[c][1]).transform(new OpenLayers.Projection("EPSG:4326"),
+                                                                                            map.getProjectionObject());
+              console.log(puntos[c]);
+            }
+            var linea = new OpenLayers.Geometry.LineString(puntos);
+            console.log(linea);
+            var feature = new OpenLayers.Feature.Vector(linea,null,style);
+            vectors.addFeatures([feature]);
+      }
+    map.addLayer(vectors);
+
+</script>
 
 {% endblock %}
