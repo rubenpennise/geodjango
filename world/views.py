@@ -6,10 +6,12 @@ from django.contrib.gis.shortcuts import render_to_kml
 from models import *
 from vectorformats.Formats import Django, GeoJSON
 from django.core import serializers
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, GEOSGeometry
 from django.views.decorators.csrf import csrf_protect
 import json
 from django.http import QueryDict
+from django.contrib.gis.measure import Distance, Area
+#import pyproj
 
 def calculos(request):
 	puntos = PuntosInteres.objects.all().count()
@@ -98,6 +100,22 @@ def distancia(request):
 		print pnt1
 		print pnt2
 		calculo= pnt1.distance(pnt2)
-		print calculo
-	return HttpResponse(calculo, mimetype='application/json') 
+		print calculo*100
+		lat1,lon1=(x0,y0)
+		lat2,lon2=(x1,y1)
+		#geod = pyproj.Geod(ellps="WGS84")
+		#angle1,angle2,distance = geod.inv(long1, lat1, long2, lat2)
+		#print "Distance is %0.2f meters" % distance
+	return HttpResponse(calculo, mimetype='application/json')
+
+def area(request):
+	if request.is_ajax():
+		#print request.body
+		#q = json.loads(request.body)
+		poligono= GEOSGeometry(request.body,srid=900913)
+		poligono.transform(4326)
+		print poligono.coords
+		area= poligono.area
+		print area
+	return HttpResponse(area,mimetype='application/json')
 # Create your views here.

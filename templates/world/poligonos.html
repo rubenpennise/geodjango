@@ -61,6 +61,7 @@
 <div id="map" style="width: 500px; height:400px;">
 </div>
 <script type="text/javascript">
+$(document).ready(function() {
 map = new OpenLayers.Map('map');
     layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
     map.addLayer(layer);
@@ -69,25 +70,67 @@ map = new OpenLayers.Map('map');
             new OpenLayers.Projection("EPSG:4326"),
             map.getProjectionObject()
         ), 11);
-    //primero el vector
-    vectors = new OpenLayers.Layer.Vector("Vector Layer");
+    //activamos el renderer para repintar features
+    var renderer = OpenLayers.Util.getParameters(window.location.href).renderer;
+renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers;
+    //creamos una capa para los poligonos
+    vectors = new OpenLayers.Layer.Vector("Poligonos",{styleMap: new OpenLayers.StyleMap({'default' :{ 
+      strokeColor: '#ff0000', 
+      strokeOpacity: 0.5,
+      strokeWidth: 5,
+      fillColor: '#ff0000',
+      fillOpacity: 0.35,
+      label : "${nombre}",
+      fontColor: "${favColor}",
+fontSize: "12px",
+fontFamily: "Courier New, monospace",
+fontWeight: "bold",
+labelAlign: "${align}",
+labelXOffset: "${xOffset}",
+labelYOffset: "${yOffset}",
+labelOutlineColor: "white",
+labelOutlineWidth: 3 
+    }}),renderers:renderer});
+
+    map.addLayer(vectors);
     
     map.addControl(new OpenLayers.Control.DrawFeature(vectors, OpenLayers.Handler.Polygon));
 
     exportMapControl = new OpenLayers.Control.ExportMap();
                 map.addControl(exportMapControl);
                 map.addControl(new OpenLayers.Control.LayerSwitcher());
+//control para seleccionar los poligonos
+    selectControl = new OpenLayers.Control.SelectFeature(
+vectors,
+{
+clickout: true, toggle: false,
+multiple: false, hover: false,
+toggleKey: "ctrlKey", // ctrl key removes from selection
+multipleKey: "shiftKey" // shift key adds to selection
+}
+); 
+    map.addControl(selectControl);
+selectControl.activate();
+//capturar los eventos de seleccion
+var poligono="";
+var parser= new OpenLayers.Format.GeoJSON();
+vectors.events.on({
+"featureselected": function(e) {
+  poligono= parser.write(e.feature.geometry);
+  console.log(poligono);
+  var div = document.getElementById("cordenadas");
+  div.innerHTML= e.feature.geometry;
+},
+"featureunselected": function(e) {
+  poligono="";
+  console.log(poligono);
+}
+}); 
     //segundo los puntos
     //tercero el linear Ring
     //cuarto agrego el feature al vector OpenLayers.Feature.vector()
     //agregar el layer al mapa
-    var style = { 
-      strokeColor: '#0000ff', 
-      strokeOpacity: 0.5,
-      strokeWidth: 5,
-      fillColor: "#0000ff",
-      fillOpacity: 0.35
-    };
+   
     var attributes = {name: "circuito numero 1", bar: "foo"};
     for(key in poligonos.features){
             var cord = poligonos.features[key].geometry.coordinates
@@ -99,11 +142,51 @@ map = new OpenLayers.Map('map');
               }
                 var ring = new OpenLayers.Geometry.LinearRing(puntos);
                 var polygon = new OpenLayers.Geometry.Polygon([ring]);
-                var feature = new OpenLayers.Feature.Vector(polygon,null,style);
+                var feature = new OpenLayers.Feature.Vector(polygon);
+                feature.attributes={nombre:poligonos.features[key].properties.name}
                 vectors.addFeatures([feature]);
             }
       }
-      map.addLayer(vectors);
+
+//para obtener el csrf para enviar a django solo para llamadas tipo POST
+     function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+//llamada a ajax
+$('#calcular').on('click', function (e) {
+  e.preventDefault();
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+var csrftoken = getCookie('csrftoken');
+$.ajax({url:"/area/", type:"POST",data:poligono, dataType:"json",success: function(data) {
+//resultado
+var div= document.getElementById("resultados");
+div.innerHTML= data;
+}});
+});
+      
       function imprimiropen(){
         var content = window.document.getElementById("map"); // get you map details
     var newWindow = window.open(); // open a new window
@@ -118,6 +201,7 @@ map = new OpenLayers.Map('map');
 //                // set download url (toDataURL() requires the use of a proxy)
 //                OpenLayers.Util.getElement("downloadLink").href = canvas.toDataURL();
             }
+});
 </script>
 <button onclick="imprimiropen()">imprimir openlayers</button>
 <button onclick="exportMap()">imagen openlayers</button>
@@ -125,4 +209,7 @@ map = new OpenLayers.Map('map');
 <button onclick="imprimirgmap()">imprimir gmap</button>
 <p>Exported map:</p>
             <canvas id="exportedImage" class="smallmap"></canvas> <br />
+            <div id="cordenadas"></div>
+            <button id="calcular"> calcular area</button>
+            <div id="resultados"></div>
 {% endblock %}

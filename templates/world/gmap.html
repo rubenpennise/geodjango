@@ -63,7 +63,7 @@ renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers
       pointRadius: 5,
       fillColor: '#ff0000',
       fillOpacity: 0.35,
-      label : "name: ${nombre}\n\ndesc: ${descripcion}",
+      label : "${nombre}\n\n${descripcion}",
       fontColor: "${favColor}",
 fontSize: "12px",
 fontFamily: "Courier New, monospace",
@@ -127,7 +127,7 @@ for (key in puntos.features) {
              );
    
    var feature = new OpenLayers.Feature.Vector(punto);
-   feature.attributes={nombre:'nombre',descripcion:'descripcion'};
+   feature.attributes={nombre:puntos.features[key].properties.name,descripcion:puntos.features[key].properties.descripcion};
   vectors.addFeatures([feature]);
    
  }
@@ -167,12 +167,15 @@ $('#calcular').on('click', function (e) {
 var csrftoken = getCookie('csrftoken');
 $.ajax({url:"/distancia/", type:"POST",data:jsondata, dataType:"json",success: function(data) {
 //resultado
+var div= document.getElementById("resultados");
+div.innerHTML= data;
 }});
 });
 });
 </script>
-<div id="cordenadas"></div>
-<button id="calcular">calcular distancia entre puntos</button>
+<div id="cordenadas" class="derecha"></div>
+<button id="calcular" class="derecha">calcular distancia entre puntos</button>
+<div id="resultados" class="derecha"></div>
 {% endblock %}
 
 <!--
