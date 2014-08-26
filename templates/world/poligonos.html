@@ -95,8 +95,7 @@ map = new OpenLayers.Map('map');
               var array = cord[c[0]];
               var puntos= [];
               for (i in array){
-                puntos[i] = new OpenLayers.Geometry.Point(array[i][0],array[i][1]).transform(new OpenLayers.Projection("EPSG:4326"),
-                                                                                            map.getProjectionObject());  
+                puntos[i] = new OpenLayers.Geometry.Point(array[i][0],array[i][1]).transform(new OpenLayers.Projection("EPSG:4326"),                                                                                            map.getProjectionObject());  
               }
                 var ring = new OpenLayers.Geometry.LinearRing(puntos);
                 var polygon = new OpenLayers.Geometry.Polygon([ring]);

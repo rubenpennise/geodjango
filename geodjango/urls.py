@@ -19,4 +19,5 @@ urlpatterns = patterns('',
     url(r'^puntos/', 'world.views.jsonser'),
     url(r'^lineas/', 'world.views.lineas'),
     url(r'^poligonos/', 'world.views.poligonos'),
+    url(r'^distancia/', 'world.views.distancia'),
 )

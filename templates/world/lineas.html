@@ -48,6 +48,7 @@
 <div id="map" style="width: 500px; height:400px;">
 </div>
 <script type="text/javascript">
+//creamos la capa base
 map = new OpenLayers.Map('map');
     layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
     map.addLayer(layer);
@@ -56,34 +57,73 @@ map = new OpenLayers.Map('map');
             new OpenLayers.Projection("EPSG:4326"),
             map.getProjectionObject()
         ), 11);
-    //primero el vector
-    vectors = new OpenLayers.Layer.Vector("Vector Layer");
-    
+    //activamos el renderer para repintar features
+    var renderer = OpenLayers.Util.getParameters(window.location.href).renderer;
+renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers; 
+//creamos una capa para las lineas
+    vectors = new OpenLayers.Layer.Vector("Vector Layer",{styleMap: new OpenLayers.StyleMap({'default' : { 
+      strokeColor: '#ff0000', 
+      strokeOpacity: 0.5,
+      strokeWidth: 5,
+      label : "name: ${nombre}\n\ndesc: ${descripcion}",
+      fontColor: "${favColor}",
+fontSize: "12px",
+fontFamily: "Courier New, monospace",
+fontWeight: "bold",
+labelAlign: "${align}",
+labelXOffset: "${xOffset}",
+labelYOffset: "${yOffset}",
+labelOutlineColor: "white",
+labelOutlineWidth: 3 
+    }}),renderers:renderer});
+    //agregamos la capa sobre la otra
+    map.addLayer(vectors);
+    //habilitamos el feature para dibujar lineas
     map.addControl(new OpenLayers.Control.DrawFeature(vectors, OpenLayers.Handler.Path));
+//habilitamos la opcion de seleccionar features
+    selectControl = new OpenLayers.Control.SelectFeature(
+vectors,
+{
+clickout: true, toggle: false,
+multiple: false, hover: false,
+toggleKey: "ctrlKey", // ctrl key removes from selection
+multipleKey: "shiftKey" // shift key adds to selection
+}
+); 
+    map.addControl(selectControl);
+selectControl.activate();
+//capturamos los eventos de seleccion y des seleccion
+    vectors.events.on({
+"featureselected": function(e) {
+alert("selected feature "+e.feature.id+" on Vector Layer 1");
+},
+"featureunselected": function(e) {
+alert("unselected feature "+e.feature.id+" on Vector Layer 1");
+}
+}); 
     //segundo los puntos
     //tercero el linear String
     //cuarto agrego el feature al vector OpenLayers.Feature.vector()
     //agregar el layer al mapa
-    var style = { 
-      strokeColor: '#0000ff', 
-      strokeOpacity: 0.5,
-      strokeWidth: 5
-    };
+    
     var lineas={{data|safe}};
     for(key in lineas.features){
             var cord = lineas.features[key].geometry.coordinates
             var puntos= [];
+            var nombre=lineas.features[key].properties.name;
+            var descripcion=lineas.features[key].properties.descripcion;
             for(c in cord){ 
-              puntos[c] = new OpenLayers.Geometry.Point(cord[c][0],cord[c][1]).transform(new OpenLayers.Projection("EPSG:4326"),
-                                                                                            map.getProjectionObject());
+              puntos[c] = new OpenLayers.Geometry.Point(cord[c][0],cord[c][1]).transform(new OpenLayers.Projection("EPSG:4326"),           map.getProjectionObject());
               console.log(puntos[c]);
             }
             var linea = new OpenLayers.Geometry.LineString(puntos);
             console.log(linea);
-            var feature = new OpenLayers.Feature.Vector(linea,null,style);
+            //var attributes={name:"name",age:10};
+            var feature = new OpenLayers.Feature.Vector(linea);
+            feature.attributes={nombre:nombre,descripcion:descripcion};
             vectors.addFeatures([feature]);
       }
-    map.addLayer(vectors);
+    
 
 </script>
 

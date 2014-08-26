@@ -7,6 +7,9 @@ from models import *
 from vectorformats.Formats import Django, GeoJSON
 from django.core import serializers
 from django.contrib.gis.geos import Point
+from django.views.decorators.csrf import csrf_protect
+import json
+from django.http import QueryDict
 
 def calculos(request):
 	puntos = PuntosInteres.objects.all().count()
@@ -77,4 +80,24 @@ def poligonos(request):
 	#data = serializers.serialize('json',puntos)
 	#return HttpResponse(data, mimetype='application/json')
 	return render_to_response('world/poligonos.html', locals(), context_instance=RequestContext(request))
+
+
+def distancia(request):
+	if request.is_ajax():
+		#dic= json.loads(request.body)
+		q = QueryDict(request.body)
+		dic= q.dict()
+		x0= float(dic['puntos[0][x]'])
+		y0= float(dic['puntos[0][y]'])
+		x1= float(dic['puntos[1][x]'])
+		y1= float(dic['puntos[1][y]'])
+		pnt1= Point(x0,y0,srid=900913)
+		pnt1.transform(4326)
+		pnt2= Point(x1,y1,srid=900913)
+		pnt2.transform(4326)
+		print pnt1
+		print pnt2
+		calculo= pnt1.distance(pnt2)
+		print calculo
+	return HttpResponse(calculo, mimetype='application/json') 
 # Create your views here.

@@ -43,6 +43,140 @@
 
 <div id="map" style="width: 500px; height:400px;"></div>
 <script type="text/javascript">
+$(document).ready(function() {
+//creamos la capa base
+map = new OpenLayers.Map('map');
+    layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
+    map.addLayer(layer);
+    map.setCenter(
+        new OpenLayers.LonLat({{lon }}, {{ lat }}).transform(
+            new OpenLayers.Projection("EPSG:4326"),
+            map.getProjectionObject()
+        ), 11);
+    //activamos el renderer para repintar features
+    var renderer = OpenLayers.Util.getParameters(window.location.href).renderer;
+renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers; 
+//creamos una capa para los puntos
+    vectors = new OpenLayers.Layer.Vector("Puntos",{styleMap: new OpenLayers.StyleMap({'default' :{ 
+      strokeColor: '#ff0000', 
+      strokeOpacity: 0.5,
+      pointRadius: 5,
+      fillColor: '#ff0000',
+      fillOpacity: 0.35,
+      label : "name: ${nombre}\n\ndesc: ${descripcion}",
+      fontColor: "${favColor}",
+fontSize: "12px",
+fontFamily: "Courier New, monospace",
+fontWeight: "bold",
+labelAlign: "${align}",
+labelXOffset: "${xOffset}",
+labelYOffset: "${yOffset}",
+labelOutlineColor: "white",
+labelOutlineWidth: 3 
+    }}),renderers:renderer});
+
+   map.addLayer(vectors);
+   //habilitamos el feature para dibujar puntos
+    map.addControl(new OpenLayers.Control.DrawFeature(vectors, OpenLayers.Handler.Point));
+    //habilitamos la opcion de seleccionar features
+    selectControl = new OpenLayers.Control.SelectFeature(
+vectors,
+{
+clickout: true, toggle: false,
+multiple: false, hover: false,
+toggleKey: "ctrlKey", // ctrl key removes from selection
+multipleKey: "shiftKey" // shift key adds to selection
+}
+); 
+    map.addControl(selectControl);
+selectControl.activate();
+
+var distancia=[];
+var jsondata={};
+jsondata.puntos=distancia;
+vectors.events.on({
+"featureselected": function(e) {
+  var punto = {};
+  punto.x = e.feature.geometry.x;
+  punto.y = e.feature.geometry.y;
+  jsondata.puntos.push(punto);
+  console.log(e.feature);
+  var div = document.getElementById("cordenadas");
+  div.innerHTML= jsondata.puntos.valueOf();
+  //console.log(e.feature)
+//alert("x"+e.feature.geometry.x+"y"+e.feature.geometry.y);
+},
+"featureunselected": function(e) {
+  for (i=0;i<jsondata.puntos.length;i++){
+    if(jsondata.puntos[i].x==e.feature.geometry.x
+        && jsondata.puntos[i].y==e.feature.geometry.y){
+    jsondata.puntos.splice(i,1);
+  }
+  }
+  var div = document.getElementById("cordenadas");
+  div.innerHTML= jsondata.puntos.valueOf();
+//alert("unselected feature "+e.feature+" on Vector Layer 1");
+}
+}); 
+
+for (key in puntos.features) {
+   var punto = new OpenLayers.Geometry.Point(puntos.features[key].geometry.coordinates[0], puntos.features[key].geometry.coordinates[1])
+             .transform(
+               new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+               map.getProjectionObject() // to Spherical Mercator Projection
+             );
+   
+   var feature = new OpenLayers.Feature.Vector(punto);
+   feature.attributes={nombre:'nombre',descripcion:'descripcion'};
+  vectors.addFeatures([feature]);
+   
+ }
+
+ function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+
+
+$('#calcular').on('click', function (e) {
+  e.preventDefault();
+  console.log(jsondata);
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+var csrftoken = getCookie('csrftoken');
+$.ajax({url:"/distancia/", type:"POST",data:jsondata, dataType:"json",success: function(data) {
+//resultado
+}});
+});
+});
+</script>
+<div id="cordenadas"></div>
+<button id="calcular">calcular distancia entre puntos</button>
+{% endblock %}
+
+<!--
+  <script type="text/javascript">
 map = new OpenLayers.Map('map');
     layer = new OpenLayers.Layer.OSM( "Simple OSM Map");
     map.addLayer(layer);
@@ -59,7 +193,14 @@ map = new OpenLayers.Map('map');
              );
    var markers = new OpenLayers.Layer.Markers( "Markers" );
    map.addLayer(markers);
-   markers.addMarker(new OpenLayers.Marker(lonLat));
-</script>
-
-{% endblock %}
+   var marker = new OpenLayers.Marker(lonLat);
+   markers.addMarker(marker);
+   marker.events.register('click', marker, function (evt) {
+    alert("lon: "+evt.object.lonlat.lon+" , lat: "+evt.object.lonlat.lat);
+});
+marker.events.register('click', marker, function (evt) {
+    //alert("lon: "+evt.object.lonlat.lon+" , lat: "+evt.object.lonlat.lat);
+    var div = document.getElementById("cordenadas");
+    div.innerHTML=div.innerHTML+"lon: "+evt.object.lonlat.lon+" , lat: "+evt.object.lonlat.lat;
+});
+</script>-->
