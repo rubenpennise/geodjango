@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_protect
 import json
 from django.http import QueryDict
 from django.contrib.gis.measure import Distance, Area
-#import pyproj
+import pyproj
 
 def calculos(request):
 	puntos = PuntosInteres.objects.all().count()
@@ -101,11 +101,11 @@ def distancia(request):
 		print pnt2
 		calculo= pnt1.distance(pnt2)
 		print calculo*100
-		lat1,lon1=(x0,y0)
-		lat2,lon2=(x1,y1)
-		#geod = pyproj.Geod(ellps="WGS84")
-		#angle1,angle2,distance = geod.inv(long1, lat1, long2, lat2)
-		#print "Distance is %0.2f meters" % distance
+		lon1,lat1=pnt1.coords
+		lon2,lat2=pnt2.coords
+		geod = pyproj.Geod(ellps="WGS84")
+		angle1,angle2,distance = geod.inv(lon1, lat1, lon2, lat2)
+		print "Distance is %0.2f meters" % distance
 	return HttpResponse(calculo, mimetype='application/json')
 
 def area(request):

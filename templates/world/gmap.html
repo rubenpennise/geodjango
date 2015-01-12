@@ -94,8 +94,10 @@ selectControl.activate();
 var distancia=[];
 var jsondata={};
 jsondata.puntos=distancia;
+var selecteds=[];
 vectors.events.on({
 "featureselected": function(e) {
+  selecteds.push(e.feature.geometry);
   var punto = {};
   punto.x = e.feature.geometry.x;
   punto.y = e.feature.geometry.y;
@@ -132,6 +134,8 @@ for (key in puntos.features) {
    
  }
 
+ 
+
  function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -152,6 +156,12 @@ function csrfSafeMethod(method) {
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
 
+$('#cal_con_open').on('click',function  () {
+  var line = new OpenLayers.Geometry.Curve(selecteds);
+  var distance = line.getLength();
+  $('#resultadosopen').empty().append(distance);
+}); 
+
 
 
 $('#calcular').on('click', function (e) {
@@ -171,11 +181,24 @@ var div= document.getElementById("resultados");
 div.innerHTML= data;
 }});
 });
-});
+
+
+
+}).ajaxStart(function () {
+  $("#loading").toggle();
+    
+    }).ajaxStop(function () {
+    $("#loading").toggle();
+    });
 </script>
 <div id="cordenadas" class="derecha"></div>
 <button id="calcular" class="derecha">calcular distancia entre puntos</button>
 <div id="resultados" class="derecha"></div>
+<button id="cal_con_open" class="derecha">calcular distancia con openlayers</button>
+<div id="resultadosopen" class="derecha"></div>
+<div id="loading" style="display: none">
+  <img src="{{STATIC_URL}}imagenes/ajax-loader.gif">
+</div>
 {% endblock %}
 
 <!--
@@ -206,4 +229,14 @@ marker.events.register('click', marker, function (evt) {
     var div = document.getElementById("cordenadas");
     div.innerHTML=div.innerHTML+"lon: "+evt.object.lonlat.lon+" , lat: "+evt.object.lonlat.lat;
 });
+
+
+para el gif loader
+$("#Loading").ajaxStart(function () {
+    $(this).show();
+    });
+
+   $("#Loading").ajaxStop(function () {
+    $(this).hide();
+    });
 </script>-->
